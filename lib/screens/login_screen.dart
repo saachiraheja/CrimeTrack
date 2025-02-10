@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:crimetrack/screens/home_screen.dart';
 import 'package:crimetrack/validation/validator.dart'; // import the Validator class
+import '../app_colors.dart'; // Import the AppColors class
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -13,6 +15,25 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  String? _emailError;
+  String? _passwordError;
+
+  bool _isPasswordVisible = false; // Boolean variable to track password visibility
+
+  // Function to handle real-time validation for email
+  void _validateEmail(String value) {
+    setState(() {
+      _emailError = Validator.validateEmail(value);
+    });
+  }
+
+  // Function to handle real-time validation for password
+  void _validatePassword(String value) {
+    setState(() {
+      _passwordError = Validator.validatePassword(value);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,8 +43,9 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: () {
             Navigator.pop(context);
           },
+          color: AppColors.accentColor, // Set the back button color to white
         ),
-        backgroundColor: const Color(0xffB81736),
+        backgroundColor: AppColors.primaryColor, // Use primaryColor from AppColors
         elevation: 0,
       ),
       body: Stack(
@@ -32,11 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             height: double.infinity,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xffB81736),
-                  Color(0xff281537),
+                  AppColors.primaryColor, // Dark Blue from AppColors
+                  AppColors.secondaryColor, // Light Blue from AppColors
                 ],
               ),
             ),
@@ -46,7 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 'Hello\nSign in!',
                 style: TextStyle(
                   fontSize: 30,
-                  color: Colors.white,
+                  color: AppColors.accentColor, // White color from AppColors
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -56,10 +78,12 @@ class _LoginScreenState extends State<LoginScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 200.0),
             child: Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-                color: Colors.white,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+                color: AppColors.accentColor, // White background for the login form
               ),
               height: double.infinity,
               width: double.infinity,
@@ -73,8 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       // Gmail input field with validation
                       TextFormField(
                         controller: _emailController,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
+                        decoration: InputDecoration(
+                          suffixIcon: const Icon(
                             Icons.check,
                             color: Colors.grey,
                           ),
@@ -82,31 +106,66 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Gmail',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
+                              color: AppColors.secondaryColor, // Set the label color to secondary color
                             ),
                           ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                          ),
+                          hintStyle: TextStyle(
+                            color: AppColors.primaryColor, // Set the hint text color to primary color
+                          ),
+                          errorText: _emailError, // Display the error message if any
                         ),
-                        validator: Validator.validateEmail,
+                        style: TextStyle(
+                          color: AppColors.primaryColor, // Set the input text color to primary color
+                        ),
+                        onChanged: _validateEmail, // Trigger validation on every change
                       ),
                       const SizedBox(height: 20),
-                      // Password input field with validation
+                      // Password input field with validation and visibility toggle
                       TextFormField(
                         controller: _passwordController,
-                        obscureText: true, // Hide the password text
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            Icons.visibility_off,
-                            color: Colors.grey,
+                        obscureText: !_isPasswordVisible, // Toggle the visibility based on the boolean value
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: AppColors.primaryColor,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible; // Toggle password visibility
+                              });
+                            },
                           ),
                           label: Text(
                             'Password',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
+                              color: AppColors.secondaryColor, // Set the label color to secondary color
                             ),
                           ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                          ),
+                          hintStyle: TextStyle(
+                            color: AppColors.primaryColor, // Set the hint text color to primary color
+                          ),
+                          errorText: _passwordError, // Display the error message if any
                         ),
-                        validator: Validator.validatePassword,
+                        style: TextStyle(
+                          color: AppColors.primaryColor, // Set the input text color to primary color
+                        ),
+                        onChanged: _validatePassword, // Trigger validation on every change
                       ),
                       const SizedBox(height: 20),
                       // Forgot password text
@@ -117,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 17,
-                            color: Color(0xff281537),
+                            color: Color(0xff281537), // Darker color for the text
                           ),
                         ),
                       ),
@@ -130,6 +189,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text('Signing in...')),
                             );
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HomeScreen(),
+                              ),
+                            );
                           }
                         },
                         child: Container(
@@ -137,10 +203,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 300,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30),
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [
-                                Color(0xffB81736),
-                                Color(0xff281537),
+                                AppColors.primaryColor, // Dark Blue from AppColors
+                                AppColors.secondaryColor, // Light Blue from AppColors
                               ],
                             ),
                           ),
@@ -150,7 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
-                                color: Colors.white,
+                                color: AppColors.accentColor, // White color from AppColors
                               ),
                             ),
                           ),
@@ -175,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 17,
-                                color: Colors.black,
+                                color: Colors.black, // Black color for "Sign up"
                               ),
                             ),
                           ],

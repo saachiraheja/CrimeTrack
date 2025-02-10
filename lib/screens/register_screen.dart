@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:crimetrack/validation/validator.dart'; // Import the Validator class
 import 'package:crimetrack/screens/home_screen.dart'; // Import the HomeScreen
+import '../app_colors.dart'; // Import the AppColors class
 
 class RegScreen extends StatefulWidget {
   const RegScreen({Key? key}) : super(key: key);
@@ -16,6 +17,41 @@ class _RegScreenState extends State<RegScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  String? _nameError;
+  String? _phoneOrEmailError;
+  String? _passwordError;
+  String? _confirmPasswordError;
+
+  bool _isPasswordVisible = false; // To handle password visibility
+  bool _isConfirmPasswordVisible = false; // Separate visibility toggle for confirm password
+
+  // Real-time validation functions
+  void _validateName(String value) {
+    setState(() {
+      _nameError = Validator.validateName(value);
+    });
+  }
+
+  void _validatePhoneOrEmail(String value) {
+    setState(() {
+      _phoneOrEmailError = Validator.validateEmail(value);
+    });
+  }
+
+  void _validatePassword(String value) {
+    setState(() {
+      _passwordError = Validator.validatePassword(value);
+    });
+  }
+
+  void _validateConfirmPassword(String value) {
+    setState(() {
+      _confirmPasswordError = value != _passwordController.text
+          ? 'Passwords do not match'
+          : null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,8 +61,9 @@ class _RegScreenState extends State<RegScreen> {
           onPressed: () {
             Navigator.pop(context);
           },
+          color: AppColors.accentColor,
         ),
-        backgroundColor: const Color(0xffB81736),
+        backgroundColor: AppColors.primaryColor, // Using primaryColor
         elevation: 0,
       ),
       body: Stack(
@@ -38,8 +75,8 @@ class _RegScreenState extends State<RegScreen> {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color(0xffB81736),
-                  Color(0xff281537),
+                  AppColors.primaryColor, // Dark Blue
+                  AppColors.secondaryColor, // Light Blue
                 ],
               ),
             ),
@@ -49,7 +86,7 @@ class _RegScreenState extends State<RegScreen> {
                 'Create Your\nAccount',
                 style: TextStyle(
                   fontSize: 30,
-                  color: Colors.white,
+                  color: AppColors.accentColor, // White text for contrast
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -64,9 +101,9 @@ class _RegScreenState extends State<RegScreen> {
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-                color: Colors.white,
+                color: AppColors.accentColor, // White background
               ),
-              height: MediaQuery.of(context).size.height - 200,  // Adjust height
+              height: MediaQuery.of(context).size.height - 200, // Adjust height
               child: Padding(
                 padding: const EdgeInsets.only(left: 18.0, right: 18),
                 child: Form(
@@ -77,8 +114,8 @@ class _RegScreenState extends State<RegScreen> {
                       // Full Name input field with validation
                       TextFormField(
                         controller: _nameController,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
+                        decoration: InputDecoration(
+                          suffixIcon: const Icon(
                             Icons.check,
                             color: Colors.grey,
                           ),
@@ -86,75 +123,128 @@ class _RegScreenState extends State<RegScreen> {
                             'Full Name',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
+                              color: AppColors.secondaryColor, // Dark Blue text
                             ),
                           ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                          ),
+                          hintStyle: TextStyle(
+                            color: AppColors.primaryColor, // Set the hint text color to primary color
+                          ),
+                          errorText: _nameError, // Display the error message if any
                         ),
-                        validator: Validator.validateName,
+                        onChanged: _validateName,
                       ),
                       const SizedBox(height: 20),
                       // Phone or Gmail input field with validation
                       TextFormField(
                         controller: _phoneOrEmailController,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
+                        decoration: InputDecoration(
+                          suffixIcon: const Icon(
                             Icons.check,
                             color: Colors.grey,
                           ),
-                          label: Text(
+                          label: const Text(
                             'Phone or Gmail',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
+                              color: AppColors.secondaryColor, // Dark Blue text
                             ),
                           ),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                          ),
+                          hintStyle: TextStyle(
+                            color: AppColors.primaryColor, // Set the hint text color to primary color
+                          ),
+                          errorText: _phoneOrEmailError, // Display the error message if any
                         ),
-                        validator: Validator.validateEmail,
+                        onChanged: _validatePhoneOrEmail,
                       ),
                       const SizedBox(height: 20),
                       // Password input field with validation
                       TextFormField(
                         controller: _passwordController,
-                        obscureText: true, // Hide the password text
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            Icons.visibility_off,
-                            color: Colors.grey,
+                        obscureText: !_isPasswordVisible, // Toggle password visibility
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: AppColors.primaryColor,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
                           ),
                           label: Text(
                             'Password',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
+                              color: AppColors.secondaryColor, // Dark Blue text
                             ),
                           ),
+
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
                         ),
-                        validator: Validator.validatePassword,
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                        ),
+                        hintStyle: TextStyle(
+                          color: AppColors.primaryColor, // Set the hint text color to primary color
+                        ),
+                        errorText: _passwordError, // Display the error message if any
+                        ),
                       ),
                       const SizedBox(height: 20),
                       // Confirm Password input field with validation
                       TextFormField(
                         controller: _confirmPasswordController,
-                        obscureText: true, // Hide the password text
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            Icons.visibility_off,
-                            color: Colors.grey,
+                        obscureText: !_isConfirmPasswordVisible, // Toggle confirm password visibility
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isConfirmPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: AppColors.primaryColor,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                              });
+                            },
                           ),
                           label: Text(
                             'Confirm Password',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: Color(0xffB81736),
+                              color: AppColors.secondaryColor, // Dark Blue text
                             ),
                           ),
+
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
                         ),
-                        validator: (value) {
-                          if (value != _passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                        ),
+                        hintStyle: TextStyle(
+                          color: AppColors.primaryColor, // Set the hint text color to primary color
+                        ),
+                        errorText: _confirmPasswordError, // Display the error message if an
+                      ),
                       ),
                       const SizedBox(height: 20),
                       // Register button
@@ -182,8 +272,8 @@ class _RegScreenState extends State<RegScreen> {
                             borderRadius: BorderRadius.circular(30),
                             gradient: const LinearGradient(
                               colors: [
-                                Color(0xffB81736),
-                                Color(0xff281537),
+                                AppColors.primaryColor, // Dark Blue
+                                AppColors.secondaryColor, // Light Blue
                               ],
                             ),
                           ),
@@ -193,7 +283,7 @@ class _RegScreenState extends State<RegScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
-                                color: Colors.white,
+                                color: AppColors.accentColor, // White text
                               ),
                             ),
                           ),
