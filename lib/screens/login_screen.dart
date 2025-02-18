@@ -1,7 +1,10 @@
+import 'package:crimetrack/screens/forgot_password.dart';
+import 'package:crimetrack/screens/otp_verification.dart';
 import 'package:flutter/material.dart';
 import 'package:crimetrack/screens/home_screen.dart';
-import 'package:crimetrack/validation/validator.dart'; // import the Validator class
-import '../app_colors.dart'; // Import the AppColors class
+import 'package:crimetrack/screens/register_screen.dart'; // Import RegisterScreen
+import 'package:crimetrack/validation/validator.dart'; // Import Validator class
+import '../app_colors.dart'; // Import AppColors class
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -15,24 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  String? _emailError;
-  String? _passwordError;
-
   bool _isPasswordVisible = false; // Boolean variable to track password visibility
-
-  // Function to handle real-time validation for email
-  void _validateEmail(String value) {
-    setState(() {
-      _emailError = Validator.validateEmail(value);
-    });
-  }
-
-  // Function to handle real-time validation for password
-  void _validatePassword(String value) {
-    setState(() {
-      _passwordError = Validator.validatePassword(value);
-    });
-  }
+  bool _isLoading = false; // Boolean to track loading state
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Gmail input field with validation
+                      // Email input field with validation
                       TextFormField(
                         controller: _emailController,
                         decoration: InputDecoration(
@@ -118,12 +105,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintStyle: TextStyle(
                             color: AppColors.primaryColor, // Set the hint text color to primary color
                           ),
-                          errorText: _emailError, // Display the error message if any
                         ),
                         style: TextStyle(
                           color: AppColors.primaryColor, // Set the input text color to primary color
                         ),
-                        onChanged: _validateEmail, // Trigger validation on every change
+                        validator: (value) {
+                          return Validator.validateEmail(value); // Using Validator class to validate email
+                        },
                       ),
                       const SizedBox(height: 20),
                       // Password input field with validation and visibility toggle
@@ -160,53 +148,82 @@ class _LoginScreenState extends State<LoginScreen> {
                           hintStyle: TextStyle(
                             color: AppColors.primaryColor, // Set the hint text color to primary color
                           ),
-                          errorText: _passwordError, // Display the error message if any
                         ),
                         style: TextStyle(
                           color: AppColors.primaryColor, // Set the input text color to primary color
                         ),
-                        onChanged: _validatePassword, // Trigger validation on every change
+                        validator: (value) {
+                          return Validator.validatePassword(value); // Using Validator class to validate password
+                        },
                       ),
                       const SizedBox(height: 20),
                       // Forgot password text
-                      const Align(
+                      Align(
                         alignment: Alignment.centerRight,
-                        child: Text(
-                          'Forgot Password?',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            color: Color(0xff281537), // Darker color for the text
+                        child: GestureDetector(
+                          onTap: () {
+                            // Navigate to ForgotPasswordScreen when tapped
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ForgotPasswordScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                              color: Color(0xff281537), // Darker color for the text
+                            ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 70),
-                      // Sign In button
+                      // Sign In button with loading indicator
                       GestureDetector(
-                        onTap: () {
+                        onTap: () async {
                           if (_formKey.currentState!.validate()) {
-                            // If form is valid, proceed to sign in
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Signing in...')),
-                            );
+                            setState(() {
+                              _isLoading = true; // Set loading state to true
+                            });
 
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
-                              ),
-                            );
+                            // Simulate a network request or login process
+                            await Future.delayed(const Duration(seconds: 2)); // Simulating a delay
+
+                            setState(() {
+                              _isLoading = false; // Set loading state to false
+                            });
+
+                            // After the login attempt (can be replaced with actual login logic)
+                            bool loginSuccess = true; // Simulated login success
+
+                            if (loginSuccess) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const OtpVerificationScreen(),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Invalid credentials!')),
+                              );
+                            }
                           }
                         },
-                        child: Container(
+                        child: _isLoading
+                            ? const CircularProgressIndicator() // Show loading indicator while processing
+                            : Container(
                           height: 55,
                           width: 300,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30),
                             gradient: LinearGradient(
                               colors: [
-                                AppColors.primaryColor, // Dark Blue from AppColors
-                                AppColors.secondaryColor, // Light Blue from AppColors
+                                AppColors.primaryColor,
+                                AppColors.secondaryColor,
                               ],
                             ),
                           ),
@@ -216,7 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
-                                color: AppColors.accentColor, // White color from AppColors
+                                color: AppColors.accentColor,
                               ),
                             ),
                           ),
@@ -224,24 +241,35 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 150),
                       // Sign up link
-                      const Align(
+                      Align(
                         alignment: Alignment.bottomRight,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Text(
+                            const Text(
                               "Don't have an account?",
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.grey,
                               ),
                             ),
-                            Text(
-                              "Sign up",
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17,
-                                color: Colors.black, // Black color for "Sign up"
+                            GestureDetector(
+                              onTap: () {
+                                // Navigate to the Register screen
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const RegScreen(), // Navigate to RegisterScreen
+                                  ),
+                                );
+                              },
+                              child: const Text(
+                                "Sign up",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                  color: Colors.black, // Black color for "Sign up"
+                                ),
                               ),
                             ),
                           ],

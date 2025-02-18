@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:crimetrack/validation/validator.dart'; // Import the Validator class
-import 'package:crimetrack/screens/home_screen.dart'; // Import the HomeScreen
-import '../app_colors.dart'; // Import the AppColors class
+import 'package:crimetrack/screens/verify_page.dart'; // Import VerifyEmailScreen
+import '../app_colors.dart'; // Import AppColors class
+import 'package:flutter/services.dart';
 
 class RegScreen extends StatefulWidget {
   const RegScreen({Key? key}) : super(key: key);
@@ -11,45 +11,19 @@ class RegScreen extends StatefulWidget {
 }
 
 class _RegScreenState extends State<RegScreen> {
-  final _formKey = GlobalKey<FormState>(); // Key to identify the form
+  final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _phoneOrEmailController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
-  String? _nameError;
-  String? _phoneOrEmailError;
-  String? _passwordError;
-  String? _confirmPasswordError;
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
+  bool _isLoading = false;
 
-  bool _isPasswordVisible = false; // To handle password visibility
-  bool _isConfirmPasswordVisible = false; // Separate visibility toggle for confirm password
-
-  // Real-time validation functions
-  void _validateName(String value) {
-    setState(() {
-      _nameError = Validator.validateName(value);
-    });
-  }
-
-  void _validatePhoneOrEmail(String value) {
-    setState(() {
-      _phoneOrEmailError = Validator.validateEmail(value);
-    });
-  }
-
-  void _validatePassword(String value) {
-    setState(() {
-      _passwordError = Validator.validatePassword(value);
-    });
-  }
-
-  void _validateConfirmPassword(String value) {
-    setState(() {
-      _confirmPasswordError = value != _passwordController.text
-          ? 'Passwords do not match'
-          : null;
-    });
+  // Password strength check
+  bool isPasswordStrong(String password) {
+    return password.length >= 8 && RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)').hasMatch(password);
   }
 
   @override
@@ -63,116 +37,120 @@ class _RegScreenState extends State<RegScreen> {
           },
           color: AppColors.accentColor,
         ),
-        backgroundColor: AppColors.primaryColor, // Using primaryColor
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
       ),
       body: Stack(
         children: [
           // Background gradient
           Container(
-            height: MediaQuery.of(context).size.height, // Adjust to screen height
+            height: double.infinity,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  AppColors.primaryColor, // Dark Blue
-                  AppColors.secondaryColor, // Light Blue
+                  AppColors.primaryColor, // Dark Blue from AppColors
+                  AppColors.secondaryColor, // Light Blue from AppColors
                 ],
               ),
             ),
             child: const Padding(
-              padding: EdgeInsets.only(top: 80.0, left: 22),
+              padding: EdgeInsets.only(top: 60.0, left: 22),
               child: Text(
                 'Create Your\nAccount',
                 style: TextStyle(
                   fontSize: 30,
-                  color: AppColors.accentColor, // White text for contrast
+                  color: AppColors.accentColor,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-          // Fixed registration form container
-          Positioned(
-            top: 200.0,
-            left: 0,
-            right: 0,
+          // Registration form container
+          Padding(
+            padding: const EdgeInsets.only(top: 200.0),
             child: Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-                color: AppColors.accentColor, // White background
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(40),
+                  topRight: Radius.circular(40),
+                ),
+                color: AppColors.accentColor,
               ),
-              height: MediaQuery.of(context).size.height - 200, // Adjust height
+              height: double.infinity,
+              width: double.infinity,
               child: Padding(
                 padding: const EdgeInsets.only(left: 18.0, right: 18),
                 child: Form(
-                  key: _formKey, // Attach the form key
+                  key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Full Name input field with validation
+                      // Full Name input field
                       TextFormField(
                         controller: _nameController,
                         decoration: InputDecoration(
-                          suffixIcon: const Icon(
-                            Icons.check,
-                            color: Colors.grey,
-                          ),
+                          suffixIcon: const Icon(Icons.check, color: Colors.grey),
                           label: Text(
                             'Full Name',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.secondaryColor, // Dark Blue text
+                              color: AppColors.secondaryColor,
                             ),
                           ),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                            borderSide: BorderSide(color: AppColors.primaryColor),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                            borderSide: BorderSide(color: AppColors.primaryColor),
                           ),
-                          hintStyle: TextStyle(
-                            color: AppColors.primaryColor, // Set the hint text color to primary color
-                          ),
-                          errorText: _nameError, // Display the error message if any
+                          hintStyle: TextStyle(color: AppColors.primaryColor),
                         ),
-                        onChanged: _validateName,
+                        style: TextStyle(color: AppColors.primaryColor),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your full name';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      // Phone or Gmail input field with validation
+                      // Email input field
                       TextFormField(
-                        controller: _phoneOrEmailController,
+                        controller: _emailController,
                         decoration: InputDecoration(
-                          suffixIcon: const Icon(
-                            Icons.check,
-                            color: Colors.grey,
-                          ),
-                          label: const Text(
-                            'Phone or Gmail',
+                          suffixIcon: const Icon(Icons.check, color: Colors.grey),
+                          label: Text(
+                            'Email',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.secondaryColor, // Dark Blue text
+                              color: AppColors.secondaryColor,
                             ),
                           ),
                           enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                            borderSide: BorderSide(color: AppColors.primaryColor),
                           ),
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
+                            borderSide: BorderSide(color: AppColors.primaryColor),
                           ),
-                          hintStyle: TextStyle(
-                            color: AppColors.primaryColor, // Set the hint text color to primary color
-                          ),
-                          errorText: _phoneOrEmailError, // Display the error message if any
+                          hintStyle: TextStyle(color: AppColors.primaryColor),
                         ),
-                        onChanged: _validatePhoneOrEmail,
+                        style: TextStyle(color: AppColors.primaryColor),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                            return 'Please enter a valid email address';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      // Password input field with validation
+                      // Password input field with visibility toggle
                       TextFormField(
                         controller: _passwordController,
-                        obscureText: !_isPasswordVisible, // Toggle password visibility
+                        obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -191,27 +169,33 @@ class _RegScreenState extends State<RegScreen> {
                             'Password',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.secondaryColor, // Dark Blue text
+                              color: AppColors.secondaryColor,
                             ),
                           ),
-
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor),
+                          ),
+                          hintStyle: TextStyle(color: AppColors.primaryColor),
                         ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
-                        ),
-                        hintStyle: TextStyle(
-                          color: AppColors.primaryColor, // Set the hint text color to primary color
-                        ),
-                        errorText: _passwordError, // Display the error message if any
-                        ),
+                        style: TextStyle(color: AppColors.primaryColor),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (!isPasswordStrong(value)) {
+                            return 'Password must be at least 8 characters long, with a mix of uppercase, lowercase, and numbers';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      // Confirm Password input field with validation
+                      // Confirm Password input field with visibility toggle
                       TextFormField(
                         controller: _confirmPasswordController,
-                        obscureText: !_isConfirmPasswordVisible, // Toggle confirm password visibility
+                        obscureText: !_isConfirmPasswordVisible,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -230,66 +214,109 @@ class _RegScreenState extends State<RegScreen> {
                             'Confirm Password',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
-                              color: AppColors.secondaryColor, // Dark Blue text
+                              color: AppColors.secondaryColor,
                             ),
                           ),
-
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: AppColors.primaryColor),
+                          ),
+                          hintStyle: TextStyle(color: AppColors.primaryColor),
                         ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: AppColors.primaryColor), // Set the border color to primary color when focused
-                        ),
-                        hintStyle: TextStyle(
-                          color: AppColors.primaryColor, // Set the hint text color to primary color
-                        ),
-                        errorText: _confirmPasswordError, // Display the error message if an
-                      ),
+                        style: TextStyle(color: AppColors.primaryColor),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please confirm your password';
+                          }
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 20),
-                      // Register button
+                      // Sign up button with loading indicator
                       GestureDetector(
-                        onTap: () {
-                          if (_formKey.currentState!.validate()) {
-                            // If form is valid, proceed with registration
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Registering...')),
-                            );
+                        onTap: () async {
+                          if (_formKey.currentState?.validate() ?? false) {
+                            setState(() {
+                              _isLoading = true;
+                            });
 
-                            // Navigate to HomeScreen after registration
+                            // Simulating a network request
+                            await Future.delayed(const Duration(seconds: 2));
+
+                            setState(() {
+                              _isLoading = false;
+                            });
+
+                            // After successful registration (replace with actual logic)
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
+                                builder: (context) => const VerifyEmailScreen(),
                               ),
                             );
                           }
                         },
-                        child: Container(
+                        child: _isLoading
+                            ? const CircularProgressIndicator()
+                            : Container(
                           height: 55,
                           width: 300,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30),
-                            gradient: const LinearGradient(
+                            gradient: LinearGradient(
                               colors: [
-                                AppColors.primaryColor, // Dark Blue
-                                AppColors.secondaryColor, // Light Blue
+                                AppColors.primaryColor,
+                                AppColors.secondaryColor,
                               ],
                             ),
                           ),
                           child: const Center(
                             child: Text(
-                              'REGISTER',
+                              'SIGN UP',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
-                                color: AppColors.accentColor, // White text
+                                color: AppColors.accentColor,
                               ),
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(height: 150),
+                      // Sign in link
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text(
+                              "Already have an account?",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text(
+                                "Sign in",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                  color: Colors.black,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

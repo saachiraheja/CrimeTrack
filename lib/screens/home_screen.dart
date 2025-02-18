@@ -1,27 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:crimetrack/screens/reports_screen.dart'; // Import the ReportsScreen
+import 'package:crimetrack/screens/your_reports_screen.dart'; // Import the YourReportsScreen
 import '../app_colors.dart'; // Import AppColors
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // This will control the current page being displayed
+  int _currentIndex = 0;
+
+  // List of screens for the drawer items
+  final List<Widget> _screens = [
+    const ReportsScreen(),
+    const YourReportsScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hello World Flutter',style: TextStyle(
-          color: AppColors.accentColor,
-        ),),
+        title: const Text(
+          'Home',
+          style: TextStyle(
+            color: AppColors.accentColor,
+          ),
+        ),
         backgroundColor: AppColors.primaryColor,
-        iconTheme: IconThemeData(color: AppColors.accentColor),// Use primaryColor from AppColors
+        iconTheme: IconThemeData(color: AppColors.accentColor),
       ),
-      // Add a Drawer widget here
+      // Drawer with two items
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
             const DrawerHeader(
               decoration: BoxDecoration(
-                color: AppColors.accentColor, // Use primaryColor for the header
+                color: AppColors.accentColor, // Use accentColor for the header
               ),
               child: Text(
                 'Menu',
@@ -32,33 +51,27 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             ListTile(
-              title: const Text('Item 1'),
+              title: const Text('Reports'),
               onTap: () {
-                // Handle tap
+                setState(() {
+                  _currentIndex = 0; // Set to Reports screen
+                });
                 Navigator.pop(context); // Close the drawer
               },
             ),
             ListTile(
-              title: const Text('Item 2'),
+              title: const Text('Your Reports'),
               onTap: () {
-                // Handle tap
+                setState(() {
+                  _currentIndex = 1; // Set to Your Reports screen
+                });
                 Navigator.pop(context); // Close the drawer
               },
             ),
-            // Add more items as needed
           ],
         ),
       ),
-      body: const Center(
-        child: Text(
-          'Hello, World!',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: AppColors.primaryColor, // Use primaryColor for text color
-          ),
-        ),
-      ),
+      body: _screens[_currentIndex], // Show the selected screen
     );
   }
 }
