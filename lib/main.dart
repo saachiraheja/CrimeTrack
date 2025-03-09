@@ -1,10 +1,14 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart'; // Ensure this is properly defined
-
 import 'screens/welcome_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();  // Ensure bindings are initialized before running the app
+  await Firebase.initializeApp();  // Initialize Firebase
+
   // Set the system status bar color to transparent
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -31,7 +35,7 @@ class MyApp extends StatelessWidget {
         textTheme: TextTheme(
           displayLarge: TextStyle(
             fontSize: 30,
-            color: AppColors.accentColor, // White text for large headings
+            color: Colors.white, // White text for large headings
             fontWeight: FontWeight.bold,
           ),
           bodyLarge: TextStyle(
@@ -44,7 +48,7 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: AppColors.primaryColor, // Dark Blue for labels
           ),
-          suffixIconColor: AppColors.accentColor, // White for icons in input fields
+          suffixIconColor: AppColors.backgroundColor, // White for icons in input fields
         ),
         buttonTheme: ButtonThemeData(
           buttonColor: AppColors.primaryColor, // Dark Blue for buttons

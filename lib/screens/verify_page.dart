@@ -1,9 +1,48 @@
 import 'package:flutter/material.dart';
-import '../app_colors.dart'; // Import AppColors if needed
+import 'package:firebase_auth/firebase_auth.dart';
 import 'login_screen.dart'; // Import Login screen
+import '../app_colors.dart'; // Import AppColors
 
 class VerifyEmailScreen extends StatelessWidget {
-  const VerifyEmailScreen({Key? key}) : super(key: key);
+  VerifyEmailScreen({Key? key}) : super(key: key);
+
+  Future<void> _verifyEmail(BuildContext context) async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Check if the email is verified
+        await user.reload();
+        user = FirebaseAuth.instance.currentUser;
+
+        if (user?.emailVerified == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email Verified Successfully!')),
+          );
+
+          // Navigate to the login screen
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Email is not verified. Please check your inbox.')),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No user found or email already verified!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +73,7 @@ class VerifyEmailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             const Text(
-              'We have sent a verification email to your provided address. Please check your inbox and enter the verification code below.',
+              'We have sent a verification email to your provided address. Please check your inbox and verify your email.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
@@ -42,34 +81,9 @@ class VerifyEmailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            // A TextField for entering verification code
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Verification Code',
-                labelStyle: TextStyle(color: AppColors.primaryColor),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primaryColor),
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.primaryColor),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Verify Button
             GestureDetector(
               onTap: () {
-                // Handle email verification logic
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Email Verified!')),
-                );
-                // Navigate to the Login Screen after successful verification
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const LoginScreen(), // Add your login screen here
-                  ),
-                );
+                _verifyEmail(context);
               },
               child: Container(
                 height: 55,
@@ -77,15 +91,12 @@ class VerifyEmailScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   gradient: const LinearGradient(
-                    colors: [
-                      AppColors.primaryColor,
-                      AppColors.secondaryColor,
-                    ],
+                    colors: [AppColors.primaryColor, AppColors.secondaryColor],
                   ),
                 ),
                 child: const Center(
                   child: Text(
-                    'VERIFY EMAIL',
+                    'CHECK EMAIL VERIFICATION',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 20,

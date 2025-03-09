@@ -38,4 +38,14 @@ class Validator {
     }
     return null;
   }
+
+  static String? validateConfirmPassword(String value, String password) {
+    if (value.isEmpty) {
+      return 'Confirm password cannot be empty';
+    }
+    if (value != password) {
+      return 'Passwords do not match';
+    }
+    return null;
+  }
 }

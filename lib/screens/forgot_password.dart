@@ -2,6 +2,7 @@ import 'package:crimetrack/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:crimetrack/validation/validator.dart'; // Import the Validator class
 import '../app_colors.dart'; // Import the AppColors class
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Authentication
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({Key? key}) : super(key: key);
@@ -21,6 +22,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     setState(() {
       _emailError = Validator.validateEmail(value);
     });
+  }
+
+  // Function to send password reset email
+  void _sendPasswordResetLink() async {
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: _emailController.text.trim(),
+      );
+      // Inform the user that the reset link has been sent
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password reset link sent! Please check your inbox.')),
+      );
+      // Navigate to the WelcomeScreen after sending the email
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const WelcomeScreen(),
+        ),
+      );
+    } catch (e) {
+      // Show error message if something goes wrong
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
+      );
+    }
   }
 
   @override
@@ -116,18 +142,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       GestureDetector(
                         onTap: () {
                           if (_formKey.currentState!.validate()) {
-                            // If form is valid, proceed with password reset request
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Sending reset link...')),
-                            );
-
-                            // Navigate to HomeScreen after the reset request
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const WelcomeScreen(),
-                              ),
-                            );
+                            // If form is valid, send the password reset email
+                            _sendPasswordResetLink();
                           }
                         },
                         child: Container(

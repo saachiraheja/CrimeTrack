@@ -57,7 +57,7 @@ class WelcomeScreen extends StatelessWidget {
                 width: 320,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: AppColors.accentColor), // Use accent color for the border
+                  border: Border.all(color: AppColors.backgroundColor), // Use accent color for the border
                 ),
                 child: const Center(
                   child: Text(
@@ -83,9 +83,9 @@ class WelcomeScreen extends StatelessWidget {
                 height: 53,
                 width: 320,
                 decoration: BoxDecoration(
-                  color: AppColors.accentColor, // Use accent color for background
+                  color: AppColors.backgroundColor, // Use accent color for background
                   borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: AppColors.accentColor), // Use accent color for the border
+                  border: Border.all(color: AppColors.backgroundColor), // Use accent color for the border
                 ),
                 child: const Center(
                   child: Text(

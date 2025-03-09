@@ -1,10 +1,10 @@
 import 'package:crimetrack/screens/forgot_password.dart';
-import 'package:crimetrack/screens/otp_verification.dart';
 import 'package:flutter/material.dart';
 import 'package:crimetrack/screens/home_screen.dart';
 import 'package:crimetrack/screens/register_screen.dart'; // Import RegisterScreen
 import 'package:crimetrack/validation/validator.dart'; // Import Validator class
 import '../app_colors.dart'; // Import AppColors class
+import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Authentication
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -189,27 +189,35 @@ class _LoginScreenState extends State<LoginScreen> {
                               _isLoading = true; // Set loading state to true
                             });
 
-                            // Simulate a network request or login process
-                            await Future.delayed(const Duration(seconds: 2)); // Simulating a delay
-
-                            setState(() {
-                              _isLoading = false; // Set loading state to false
-                            });
-
-                            // After the login attempt (can be replaced with actual login logic)
-                            bool loginSuccess = true; // Simulated login success
-
-                            if (loginSuccess) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const OtpVerificationScreen(),
-                                ),
+                            // Attempt login using Firebase Authentication
+                            try {
+                              UserCredential userCredential = await FirebaseAuth.instance
+                                  .signInWithEmailAndPassword(
+                                email: _emailController.text,
+                                password: _passwordController.text,
                               );
-                            } else {
+
+                              // Check if the email is verified
+                              if (userCredential.user != null && userCredential.user!.emailVerified) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const HomeScreen(),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Please verify your email before logging in.')),
+                                );
+                              }
+                            } catch (e) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Invalid credentials!')),
+                                SnackBar(content: Text('Error: ${e.toString()}')),
                               );
+                            } finally {
+                              setState(() {
+                                _isLoading = false; // Set loading state to false
+                              });
                             }
                           }
                         },
