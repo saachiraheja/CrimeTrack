@@ -1,0 +1,2 @@
+D:/College/Sem6/MPL/CrimeTrack/android/app/.cxx/RelWithDebInfo/a1g93i1i/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/College/Sem6/MPL/CrimeTrack/android/app/.cxx/RelWithDebInfo/a1g93i1i/arm64-v8a/CMakeFiles/rebuild_cache.dir
